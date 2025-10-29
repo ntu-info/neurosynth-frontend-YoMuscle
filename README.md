@@ -21,3 +21,7 @@ https://mil.psy.ntu.edu.tw:5000/terms
 https://mil.psy.ntu.edu.tw:5000/terms/amygdala
 
 https://mil.psy.ntu.edu.tw:5000/query/amygdala%20not%20emotion/studies
+
+### 心得 
+1. 前端程式要用 vibe coding 的方式對話, 不是很容易.
+2. 當瞭解每個 API call 回傳的內容及其含意的時候, 就比較容易有想法, 知道如何設計畫面, 讓使用者有較佳的操作及用戶體驗.
