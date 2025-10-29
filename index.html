@@ -101,7 +101,7 @@
       border-radius: 4px;
       border: none;
       font-size: 1rem;
-      background: #19507e;
+      background: #191b7e;
       color: #fff;
       cursor: pointer;
     }
@@ -114,7 +114,7 @@
       cursor: pointer;
     }
     .search-btn {
-      background: #19507e;
+      background: #191b7e;
       color: #fff;
     }
     .clear-btn {
@@ -149,7 +149,7 @@
       text-align: left;
     }
     th {
-      background: #19507e;
+      background: #191b7e;
       font-weight: bold;
     }
     tr:last-child td {
@@ -187,6 +187,7 @@
             <button id="clearTeamTermBtn" title="Clear" style="position:absolute;right:8px;background:none;border:none;font-size:1.3rem;color:#888;cursor:pointer;z-index:2;">✕</button>
           </div>
           <button class="search-btn" id="teamSearchBtn">Search</button>
+          <button class="clear-btn" id="teamClearBtn" style="margin-left:8px;">Clear</button>
         </div>
         <div id="teamTermSuggestions" class="term-suggestions" style="display:none;"></div>
         <div class="table-container" style="margin-top:24px;">
@@ -307,6 +308,17 @@
     const teamSearchBtn = document.getElementById('teamSearchBtn');
     const clearTeamTermBtn = document.getElementById('clearTeamTermBtn');
     const teamResultsBody = document.getElementById('teamResultsBody');
+
+    // --- Team Query Clear button (panel clear) ---
+    const teamClearBtn = document.getElementById('teamClearBtn');
+    if (teamClearBtn) {
+      teamClearBtn.addEventListener('click', function() {
+        teamTermInput.value = '';
+        teamTermSuggestions.style.display = 'none';
+        teamResultsBody.innerHTML = '<tr class="empty-row"><td colspan="4">No results</td></tr>';
+        teamTermInput.focus();
+      });
+    }
 
     // Autocomplete for team term input
     teamTermInput.addEventListener('input', function() {
