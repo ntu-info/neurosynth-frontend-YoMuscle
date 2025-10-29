@@ -2,44 +2,515 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Fetch /terms Demo</title>
+  <title>Neuro-Navigator</title>
+  <style>
+    body {
+      background: #181f2a;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 32px auto;
+      background: #232b3a;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px #0004;
+      padding: 32px 32px 24px 32px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .terms-search-bar {
+      display: flex;
+      align-items: center;
+      background: #232b3a;
+      border-radius: 6px;
+      border: 1px solid #444c5e;
+      padding: 0 12px;
+      height: 44px;
+      min-width: 380px;
+      max-width: 480px;
+      width: 100%;
+      color: #fff;
+    }
+    .terms-search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 1.1rem;
+      width: 100%;
+      padding: 8px 0 8px 8px;
+    }
+    .terms-search-bar .search-icon {
+      font-size: 1.2rem;
+      color: #aaa;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 32px;
+    }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      margin-right: 12px;
+    }
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 4px;
+      border: none;
+      font-size: 1rem;
+      background: #fff;
+      color: #222;
+    }
+    .term-suggestions {
+      position: absolute;
+      background: #fff;
+      color: #222;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 2px 8px #0002;
+      z-index: 10;
+      max-height: 180px;
+      overflow-y: auto;
+      width: 100%;
+    }
+    .term-suggestion {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .term-suggestion:hover {
+      background: #e0e7ef;
+    }
+    .operator-select {
+      padding: 10px 16px;
+      border-radius: 4px;
+      border: none;
+      font-size: 1rem;
+      background: #19507e;
+      color: #fff;
+      cursor: pointer;
+    }
+    .clear-btn, .search-btn {
+      padding: 10px 18px;
+      border-radius: 4px;
+      border: none;
+      font-size: 1rem;
+      margin-left: 8px;
+      cursor: pointer;
+    }
+    .search-btn {
+      background: #19507e;
+      color: #fff;
+    }
+    .clear-btn {
+      background: #444c5e;
+      color: #fff;
+    }
+    .query-box {
+      background: #fff;
+      color: #222;
+      border-radius: 4px;
+      padding: 12px;
+      min-height: 48px;
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+    .table-container {
+      margin-top: 32px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #232b3a;
+      color: #fff;
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #39506b;
+      text-align: left;
+    }
+    th {
+      background: #19507e;
+      font-weight: bold;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .empty-row td {
+      color: #aaa;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-  <h1>Fetch https://mil.psy.ntu.edu.tw:5000/terms</h1>
-  <button id="btn">Fetch again</button>
-  <pre id="out">Loading…</pre>
+  <div class="container">
+    <div class="topbar">
+      <div class="logo">
+        <span class="logo-icon">✨</span>
+        Neuro-Navigator
+      </div>
+      <div class="terms-search-bar" id="topTermsBar" style="margin-left:auto;position:relative;">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="topTermsInput" placeholder="Search terms... (e.g., memory, attention)" aria-label="Search terms" autocomplete="off" />
+        <div id="topTermsSuggestions" class="term-suggestions" style="top:44px;left:0;right:0;display:none;"></div>
+      </div>
+    </div> <!-- END .topbar -->
+
+    <div style="position:relative;">
+      <div style="font-size:1.1rem;font-weight:bold;margin-bottom:6px;letter-spacing:0.5px;">Query Builder</div>
+      <div class="search-row" style="gap:0;">
+        <div style="position:relative;flex:1;display:flex;align-items:center;">
+          <input id="searchTerm" class="search-input" type="text" placeholder="Enter a search term" autocomplete="off" style="border-top-right-radius:0;border-bottom-right-radius:0;" />
+          <button id="clearTermBtn" title="Clear" style="position:absolute;right:8px;background:none;border:none;font-size:1.3rem;color:#888;cursor:pointer;z-index:2;">✕</button>
+        </div>
+        <div style="position:relative;">
+          <button id="operatorBtn" class="operator-select" type="button" style="border-top-left-radius:0;border-bottom-left-radius:0;">ADD</button>
+          <div id="operatorDropdown" style="display:none;position:absolute;right:0;top:110%;background:#232b3a;border-radius:4px;box-shadow:0 2px 8px #0002;z-index:20;min-width:160px;">
+            <div class="operator-option" data-op="AND" style="padding:10px 18px;cursor:pointer;">add with AND</div>
+            <div class="operator-option" data-op="OR" style="padding:10px 18px;cursor:pointer;">add with OR</div>
+            <div class="operator-option" data-op="NOT" style="padding:10px 18px;cursor:pointer;">add with NOT</div>
+          </div>
+        </div>
+      </div>
+      <div id="termSuggestions" class="term-suggestions" style="display:none;"></div>
+    </div>
+
+    <div style="margin-top:18px;margin-bottom:8px;font-weight:bold;">Query box</div>
+    <div class="query-box" id="queryBox" contenteditable="false"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <button class="search-btn" id="searchBtn">Search</button>
+      <button class="clear-btn" id="clearBtn">Clear</button>
+    </div>
+
+    <div class="table-container">
+      <div id="pagination-top" style="display:flex;align-items:center;justify-content:center;margin-bottom:8px;gap:8px;"></div>
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Study id</th>
+            <th>Journal</th>
+            <th>Year</th>
+            <th>Title</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          <tr class="empty-row"><td colspan="4">No results</td></tr>
+        </tbody>
+      </table>
+      <div id="pagination-bottom" style="display:flex;align-items:center;justify-content:center;margin-top:8px;gap:8px;"></div>
+    </div>
+  </div>
 
   <script>
-    async function fetchTerms() {
-      const out = document.getElementById('out');
-      out.textContent = 'Requesting…';
-      try {
-        const resp = await fetch('https://mil.psy.ntu.edu.tw:5000/terms');
-        let info = `HTTP ${resp.status} ${resp.statusText}\n`;
-        const ct = resp.headers.get('content-type') || '';
-
-        if (!resp.ok) {
-          const text = await resp.text();
-          out.textContent = info + '\n' + text;
+    // --- Topbar terms search bar auto-complete ---
+    (function() {
+      const topTermsInput = document.getElementById('topTermsInput');
+      const topTermsSuggestions = document.getElementById('topTermsSuggestions');
+      if (!topTermsInput || !topTermsSuggestions) return;
+      topTermsInput.addEventListener('input', function() {
+        const val = this.value.trim().toLowerCase();
+        if (!val) {
+          topTermsSuggestions.style.display = 'none';
           return;
         }
-
-        if (ct.includes('application/json')) {
-          const data = await resp.json();
-          out.textContent = info + '\n' + JSON.stringify(data, null, 2);
-        } else {
-          const text = await resp.text();
-          out.textContent = info + '\n' + text;
+        if (allTerms === null) {
+          topTermsSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">Loading…</div>';
+          topTermsSuggestions.style.display = 'block';
+          return;
         }
-      } catch (err) {
-        document.getElementById('out').textContent =
-          'Error: ' + (err && err.message ? err.message : String(err)) +
-          '\n\nCommon causes:\n1) CORS not allowed by the server\n2) Opening this file via file:// instead of a local server\n3) Network/server issues';
+        if (!Array.isArray(allTerms) || !allTerms.length) {
+          topTermsSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">No terms found</div>';
+          topTermsSuggestions.style.display = 'block';
+          return;
+        }
+        const filtered = allTerms.filter(t => t.toLowerCase().includes(val)).slice(0, 10);
+        if (!filtered.length) {
+          topTermsSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">No match</div>';
+          topTermsSuggestions.style.display = 'block';
+          return;
+        }
+        topTermsSuggestions.innerHTML = filtered.map(t => `<div class="term-suggestion">${t}</div>`).join('');
+        topTermsSuggestions.style.display = 'block';
+      });
+      topTermsSuggestions.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('term-suggestion')) {
+          topTermsInput.value = e.target.textContent;
+          topTermsSuggestions.style.display = 'none';
+          topTermsInput.focus();
+        }
+      });
+      topTermsInput.addEventListener('blur', function() {
+        setTimeout(() => { topTermsSuggestions.style.display = 'none'; }, 120);
+      });
+    })();
+    // --- State ---
+  let allTerms = null;
+    let queryTerms = [];
+    let lastOperator = 'AND';
+
+    // --- DOM ---
+    const searchTermInput = document.getElementById('searchTerm');
+    const termSuggestions = document.getElementById('termSuggestions');
+    const operatorSelect = document.getElementById('operator');
+  const operatorBtn = document.getElementById('operatorBtn');
+  const operatorDropdown = document.getElementById('operatorDropdown');
+  let operatorMode = 'ADD'; // 初始狀態
+    const queryBox = document.getElementById('queryBox');
+    const searchBtn = document.getElementById('searchBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const clearTermBtn = document.getElementById('clearTermBtn');
+    const resultsBody = document.getElementById('resultsBody');
+
+    // --- Fetch all terms on load ---
+    async function fetchAllTerms() {
+      try {
+        const resp = await fetch('https://hpc.psy.ntu.edu.tw:5000/terms');
+        if (!resp.ok) { allTerms = []; return; }
+        const data = await resp.json();
+        // API 回傳格式為 { terms: [...] }
+        allTerms = Array.isArray(data.terms) ? data.terms : [];
+      } catch (e) {
+        allTerms = [];
       }
     }
+    fetchAllTerms();
 
-    document.getElementById('btn').addEventListener('click', fetchTerms);
-    fetchTerms();
+    // --- Term suggestions ---
+    searchTermInput.addEventListener('input', function() {
+      const val = this.value.trim().toLowerCase();
+      if (!val) {
+        termSuggestions.style.display = 'none';
+        return;
+      }
+      if (allTerms === null) {
+        termSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">Loading…</div>';
+        termSuggestions.style.display = 'block';
+        return;
+      }
+      if (!Array.isArray(allTerms) || !allTerms.length) {
+        termSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">No terms found</div>';
+        termSuggestions.style.display = 'block';
+        return;
+      }
+      const filtered = allTerms.filter(t => t.toLowerCase().includes(val)).slice(0, 10);
+      if (!filtered.length) {
+        termSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">No match</div>';
+        termSuggestions.style.display = 'block';
+        return;
+      }
+      termSuggestions.innerHTML = filtered.map(t => `<div class="term-suggestion">${t}</div>`).join('');
+      termSuggestions.style.display = 'block';
+    });
+
+    // --- Select suggestion ---
+    termSuggestions.addEventListener('mousedown', function(e) {
+      if (e.target.classList.contains('term-suggestion')) {
+        searchTermInput.value = e.target.textContent;
+        termSuggestions.style.display = 'none';
+        searchTermInput.focus();
+      }
+    });
+
+    // --- Hide suggestions on blur ---
+    searchTermInput.addEventListener('blur', function() {
+      setTimeout(() => { termSuggestions.style.display = 'none'; }, 120);
+    });
+
+    // --- Add term to query ---
+    searchTermInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        addTermToQuery(this.value.trim());
+        this.value = '';
+        termSuggestions.style.display = 'none';
+        e.preventDefault();
+      }
+    });
+
+    // --- Operator change ---
+    // --- Operator button/dropdown ---
+    operatorBtn.addEventListener('click', function(e) {
+      if (operatorMode === 'ADD') {
+        // 第一次按下 ADD
+        const val = searchTermInput.value.trim();
+        if (val) {
+          addTermToQuery(val);
+          searchTermInput.value = '';
+          termSuggestions.style.display = 'none';
+          operatorMode = 'OP';
+          operatorBtn.textContent = lastOperator;
+        }
+      } else {
+        operatorDropdown.style.display = operatorDropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    });
+    // Hide dropdown on outside click
+    document.addEventListener('mousedown', function(e) {
+      if (!operatorBtn.contains(e.target) && !operatorDropdown.contains(e.target)) {
+        operatorDropdown.style.display = 'none';
+      }
+    });
+    // Dropdown option click
+    operatorDropdown.addEventListener('mousedown', function(e) {
+      if (e.target.classList.contains('operator-option')) {
+        const op = e.target.getAttribute('data-op');
+        lastOperator = op;
+        operatorBtn.textContent = op;
+        operatorDropdown.style.display = 'none';
+        operatorMode = 'OP';
+        // 若 search term 有值，直接加進 query box
+        const val = searchTermInput.value.trim();
+        if (val) {
+          addTermToQuery(val, lastOperator);
+          searchTermInput.value = '';
+          termSuggestions.style.display = 'none';
+        }
+      }
+    });
+
+    // --- Add term to query logic ---
+    function addTermToQuery(term, opOverride) {
+      if (!term) return;
+      if (!queryTerms.length) {
+        queryTerms.push({op: '', term});
+      } else {
+        queryTerms.push({op: opOverride || lastOperator, term});
+      }
+      updateQueryBox();
+    }
+
+    // --- Update query box ---
+    function updateQueryBox() {
+      if (!queryTerms.length) {
+        queryBox.textContent = '';
+        return;
+      }
+      let q = '';
+      queryTerms.forEach((qt, i) => {
+        if (i > 0) q += ` ${qt.op} `;
+        q += `(${qt.term})`;
+      });
+      queryBox.textContent = q;
+    }
+
+    // --- Clear query ---
+    clearBtn.addEventListener('click', function() {
+      queryTerms = [];
+      updateQueryBox();
+      resultsBody.innerHTML = '<tr class="empty-row"><td colspan="4">No results</td></tr>';
+    });
+
+    // --- Clear search term input ---
+    clearTermBtn.addEventListener('click', function() {
+      searchTermInput.value = '';
+      termSuggestions.style.display = 'none';
+      searchTermInput.focus();
+    });
+
+    // --- Pagination state ---
+    let currentPage = 1;
+  let studiesArr = [];
+  let studiesPerPage = 10;
+  let totalCount = 0;
+  const paginationTop = document.getElementById('pagination-top');
+  const paginationBottom = document.getElementById('pagination-bottom');
+
+    function renderTablePage(page) {
+      if (!studiesArr.length) {
+        resultsBody.innerHTML = '<tr class="empty-row"><td colspan="4">No results</td></tr>';
+        paginationTop.innerHTML = '';
+        paginationBottom.innerHTML = '';
+        return;
+      }
+      const totalPages = Math.ceil(studiesArr.length / studiesPerPage);
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      currentPage = page;
+      const start = (page - 1) * studiesPerPage;
+      const end = start + studiesPerPage;
+      const pageArr = studiesArr.slice(start, end);
+      resultsBody.innerHTML = pageArr.map(study =>
+        `<tr><td>${study.study_id || study.id || ''}</td><td>${study.journal || ''}</td><td>${study.year || ''}</td><td>${study.title || ''}</td></tr>`
+      ).join('');
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      if (totalPages <= 1) { paginationTop.innerHTML = ''; paginationBottom.innerHTML = ''; return; }
+      let html = '';
+      const activeColor = '#2196f3';
+      const disabledColor = '#888';
+      function btn(disabled, page, symbol) {
+        return `<button ${disabled ? 'disabled' : ''} data-page="${page}" style="background:none;border:none;font-size:1.5rem;color:${disabled ? disabledColor : activeColor};padding:0 8px;">${symbol}</button>`;
+      }
+      html += btn(currentPage === 1, 'first', '&#171;');
+      html += btn(currentPage === 1, 'prev', '&#8249;');
+      html += `Page <input id="pageInput" type="number" min="1" max="${totalPages}" value="${currentPage}" style="width:48px;text-align:center;"> of ${totalPages}`;
+      html += btn(currentPage === totalPages, 'next', '&#8250;');
+      html += btn(currentPage === totalPages, 'last', '&#187;');
+      html += `<span style="margin-left:18px;color:#fff;font-size:1rem;">Total: <b>${totalCount}</b></span>`;
+      paginationTop.innerHTML = html;
+      paginationBottom.innerHTML = html;
+      // Add events (top)
+      const pagers = [paginationTop, paginationBottom];
+      pagers.forEach(pager => {
+        pager.querySelector('[data-page="first"]').onclick = () => renderTablePage(1);
+        pager.querySelector('[data-page="prev"]').onclick = () => renderTablePage(currentPage - 1);
+        pager.querySelector('[data-page="next"]').onclick = () => renderTablePage(currentPage + 1);
+        pager.querySelector('[data-page="last"]').onclick = () => renderTablePage(Math.ceil(studiesArr.length / studiesPerPage));
+        pager.querySelector('#pageInput').onchange = (e) => {
+          let v = parseInt(e.target.value, 10);
+          if (isNaN(v) || v < 1) v = 1;
+          if (v > Math.ceil(studiesArr.length / studiesPerPage)) v = Math.ceil(studiesArr.length / studiesPerPage);
+          renderTablePage(v);
+        };
+      });
+    }
+
+    // --- Search studies ---
+    searchBtn.addEventListener('click', async function() {
+      let queryStr = queryBox.textContent.trim();
+      // 若 query box 沒內容但 search term 有值，直接查詢該 term
+      if (!queryStr && searchTermInput.value.trim()) {
+        queryStr = `(${searchTermInput.value.trim()})`;
+      }
+      if (!queryStr) return;
+      resultsBody.innerHTML = '<tr><td colspan="4">Searching…</td></tr>';
+  paginationTop.innerHTML = '';
+  paginationBottom.innerHTML = '';
+      try {
+        // 將 query string 轉成 API 格式，去除所有括號
+        let apiQuery = queryStr.replace(/[()]/g, '').replace(/\s+/g, ' ').trim();
+        const url = 'https://hpc.psy.ntu.edu.tw:5000/query/' + encodeURIComponent(apiQuery) + '/studies';
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+  studiesArr = Array.isArray(data.results) ? data.results : [];
+  totalCount = typeof data.count === 'number' ? data.count : studiesArr.length;
+  renderTablePage(1);
+      } catch (e) {
+        resultsBody.innerHTML = '<tr><td colspan="4">Error: ' + (e.message || e) + '</td></tr>';
+        paginationDiv.innerHTML = '';
+      }
+    });
   </script>
 </body>
 </html>
