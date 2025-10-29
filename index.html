@@ -162,6 +162,7 @@
   </style>
 </head>
 <body>
+
   <div class="container">
     <div class="topbar">
       <div class="logo">
@@ -175,53 +176,181 @@
       </div>
     </div> <!-- END .topbar -->
 
-    <div style="position:relative;">
-      <div style="font-size:1.1rem;font-weight:bold;margin-bottom:6px;letter-spacing:0.5px;">Query Builder</div>
-      <div class="search-row" style="gap:0;">
-        <div style="position:relative;flex:1;display:flex;align-items:center;">
-          <input id="searchTerm" class="search-input" type="text" placeholder="Enter a search term" autocomplete="off" style="border-top-right-radius:0;border-bottom-right-radius:0;" />
-          <button id="clearTermBtn" title="Clear" style="position:absolute;right:8px;background:none;border:none;font-size:1.3rem;color:#888;cursor:pointer;z-index:2;">✕</button>
-        </div>
-        <div style="position:relative;">
-          <button id="operatorBtn" class="operator-select" type="button" style="border-top-left-radius:0;border-bottom-left-radius:0;">ADD</button>
-          <div id="operatorDropdown" style="display:none;position:absolute;right:0;top:110%;background:#232b3a;border-radius:4px;box-shadow:0 2px 8px #0002;z-index:20;min-width:160px;">
-            <div class="operator-option" data-op="AND" style="padding:10px 18px;cursor:pointer;">add with AND</div>
-            <div class="operator-option" data-op="OR" style="padding:10px 18px;cursor:pointer;">add with OR</div>
-            <div class="operator-option" data-op="NOT" style="padding:10px 18px;cursor:pointer;">add with NOT</div>
+    <!-- Tabs -->
+    <div style="display:flex;gap:0.5rem;margin-bottom:24px;">
+      <button id="tabMain" class="tab-btn" style="padding:10px 28px 10px 28px;font-size:1.1rem;border-radius:8px 8px 0 0;border:none;background:#19507e;color:#fff;cursor:pointer;">Journal Query</button>
+  <button id="tabTeam" class="tab-btn" style="padding:10px 28px 10px 28px;font-size:1.1rem;border-radius:8px 8px 0 0;border:none;background:#232b3a;color:#fff;cursor:pointer;">Term Query</button>
+    </div>
+
+    <!-- Main Tab Content -->
+    <div id="mainTabContent">
+      <div style="position:relative;">
+        <div style="font-size:1.1rem;font-weight:bold;margin-bottom:6px;letter-spacing:0.5px;">Query Builder</div>
+        <div class="search-row" style="gap:0;">
+          <div style="position:relative;flex:1;display:flex;align-items:center;">
+            <input id="searchTerm" class="search-input" type="text" placeholder="Enter a search term" autocomplete="off" style="border-top-right-radius:0;border-bottom-right-radius:0;" />
+            <button id="clearTermBtn" title="Clear" style="position:absolute;right:8px;background:none;border:none;font-size:1.3rem;color:#888;cursor:pointer;z-index:2;">✕</button>
+          </div>
+          <div style="position:relative;">
+            <button id="operatorBtn" class="operator-select" type="button" style="border-top-left-radius:0;border-bottom-left-radius:0;">ADD</button>
+            <div id="operatorDropdown" style="display:none;position:absolute;right:0;top:110%;background:#232b3a;border-radius:4px;box-shadow:0 2px 8px #0002;z-index:20;min-width:160px;">
+              <div class="operator-option" data-op="AND" style="padding:10px 18px;cursor:pointer;">add with AND</div>
+              <div class="operator-option" data-op="OR" style="padding:10px 18px;cursor:pointer;">add with OR</div>
+              <div class="operator-option" data-op="NOT" style="padding:10px 18px;cursor:pointer;">add with NOT</div>
+            </div>
           </div>
         </div>
+        <div id="termSuggestions" class="term-suggestions" style="display:none;"></div>
       </div>
-      <div id="termSuggestions" class="term-suggestions" style="display:none;"></div>
+
+      <div style="margin-top:18px;margin-bottom:8px;font-weight:bold;">Query box</div>
+      <div class="query-box" id="queryBox" contenteditable="false"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <button class="search-btn" id="searchBtn">Search</button>
+        <button class="clear-btn" id="clearBtn">Clear</button>
+      </div>
+
+      <div class="table-container">
+        <div id="pagination-top" style="display:flex;align-items:center;justify-content:center;margin-bottom:8px;gap:8px;"></div>
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Study id</th>
+              <th id="thJournal" style="cursor:pointer;user-select:none;">Journal <span id="sortJournalIcon" style="font-size:0.9em;"></span></th>
+              <th>Author</th>
+              <th id="thYear" style="cursor:pointer;user-select:none;">
+                <span style="display:inline-flex;align-items:center;gap:4px;">Year&nbsp;<span id="sortYearIcon" style="font-size:0.9em;"></span></span>
+              </th>
+              <th>Title</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr class="empty-row"><td colspan="5">No results</td></tr>
+          </tbody>
+        </table>
+        <div id="pagination-bottom" style="display:flex;align-items:center;justify-content:center;margin-top:8px;gap:8px;"></div>
+      </div>
     </div>
 
-    <div style="margin-top:18px;margin-bottom:8px;font-weight:bold;">Query box</div>
-    <div class="query-box" id="queryBox" contenteditable="false"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <button class="search-btn" id="searchBtn">Search</button>
-      <button class="clear-btn" id="clearBtn">Clear</button>
-    </div>
-
-    <div class="table-container">
-      <div id="pagination-top" style="display:flex;align-items:center;justify-content:center;margin-bottom:8px;gap:8px;"></div>
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th>Study id</th>
-            <th id="thJournal" style="cursor:pointer;user-select:none;">Journal <span id="sortJournalIcon" style="font-size:0.9em;"></span></th>
-            <th>Author</th>
-            <th id="thYear" style="cursor:pointer;user-select:none;">
-              <span style="display:inline-flex;align-items:center;gap:4px;">Year&nbsp;<span id="sortYearIcon" style="font-size:0.9em;"></span></span>
-            </th>
-            <th>Title</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody">
-          <tr class="empty-row"><td colspan="5">No results</td></tr>
-        </tbody>
-      </table>
-      <div id="pagination-bottom" style="display:flex;align-items:center;justify-content:center;margin-top:8px;gap:8px;"></div>
+    <!-- Team Tab Content -->
+    <div id="teamTabContent" style="display:none;">
+      <div style="font-size:1.1rem;font-weight:bold;margin-bottom:6px;letter-spacing:0.5px;">Term Query</div>
+      <div class="search-row" style="gap:0;">
+        <div style="position:relative;flex:1;display:flex;align-items:center;">
+          <input id="teamTermInput" class="search-input" type="text" placeholder="Enter a term (e.g., amygdala)" autocomplete="off" style="border-top-right-radius:0;border-bottom-right-radius:0;" />
+          <button id="clearTeamTermBtn" title="Clear" style="position:absolute;right:8px;background:none;border:none;font-size:1.3rem;color:#888;cursor:pointer;z-index:2;">✕</button>
+        </div>
+        <button class="search-btn" id="teamSearchBtn">Search</button>
+      </div>
+      <div id="teamTermSuggestions" class="term-suggestions" style="display:none;"></div>
+      <div class="table-container" style="margin-top:24px;">
+        <table id="teamResultsTable">
+          <thead>
+            <tr>
+              <th>Related Term</th>
+              <th>Co-occurrence</th>
+              <th>Jaccard</th>
+            </tr>
+          </thead>
+          <tbody id="teamResultsBody">
+            <tr class="empty-row"><td colspan="3">No results</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
+
+  <script>
+    // --- Tab switching ---
+    const tabMain = document.getElementById('tabMain');
+    const tabTeam = document.getElementById('tabTeam');
+    const mainTabContent = document.getElementById('mainTabContent');
+    const teamTabContent = document.getElementById('teamTabContent');
+    tabMain.addEventListener('click', function() {
+      tabMain.style.background = '#19507e';
+      tabTeam.style.background = '#232b3a';
+      mainTabContent.style.display = '';
+      teamTabContent.style.display = 'none';
+    });
+    tabTeam.addEventListener('click', function() {
+      tabMain.style.background = '#232b3a';
+      tabTeam.style.background = '#19507e';
+      mainTabContent.style.display = 'none';
+      teamTabContent.style.display = '';
+    });
+
+    // --- Team tab: autocomplete and search ---
+    const teamTermInput = document.getElementById('teamTermInput');
+    const teamTermSuggestions = document.getElementById('teamTermSuggestions');
+    const teamSearchBtn = document.getElementById('teamSearchBtn');
+    const clearTeamTermBtn = document.getElementById('clearTeamTermBtn');
+    const teamResultsBody = document.getElementById('teamResultsBody');
+
+    // Autocomplete for team term input
+    teamTermInput.addEventListener('input', function() {
+      const val = this.value.trim().toLowerCase();
+      if (!val) {
+        teamTermSuggestions.style.display = 'none';
+        return;
+      }
+      if (allTerms === null) {
+        teamTermSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">Loading…</div>';
+        teamTermSuggestions.style.display = 'block';
+        return;
+      }
+      if (!Array.isArray(allTerms) || !allTerms.length) {
+        teamTermSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">No terms found</div>';
+        teamTermSuggestions.style.display = 'block';
+        return;
+      }
+      const filtered = allTerms.filter(t => t.toLowerCase().includes(val)).slice(0, 10);
+      if (!filtered.length) {
+        teamTermSuggestions.innerHTML = '<div style="padding:8px 12px;color:#888;">No match</div>';
+        teamTermSuggestions.style.display = 'block';
+        return;
+      }
+      teamTermSuggestions.innerHTML = filtered.map(t => `<div class="term-suggestion">${t}</div>`).join('');
+      teamTermSuggestions.style.display = 'block';
+    });
+    teamTermSuggestions.addEventListener('mousedown', function(e) {
+      if (e.target.classList.contains('term-suggestion')) {
+        teamTermInput.value = e.target.textContent;
+        teamTermSuggestions.style.display = 'none';
+        teamTermInput.focus();
+      }
+    });
+    teamTermInput.addEventListener('blur', function() {
+      setTimeout(() => { teamTermSuggestions.style.display = 'none'; }, 120);
+    });
+    clearTeamTermBtn.addEventListener('click', function() {
+      teamTermInput.value = '';
+      teamTermSuggestions.style.display = 'none';
+      teamTermInput.focus();
+    });
+
+    // Team search
+    teamSearchBtn.addEventListener('click', async function() {
+      const term = teamTermInput.value.trim();
+      if (!term) return;
+      teamResultsBody.innerHTML = '<tr><td colspan="3">Searching…</td></tr>';
+      try {
+        const url = 'https://hpc.psy.ntu.edu.tw:5000/terms/' + encodeURIComponent(term);
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        const arr = Array.isArray(data.related) ? data.related : [];
+        if (!arr.length) {
+          teamResultsBody.innerHTML = '<tr class="empty-row"><td colspan="3">No results</td></tr>';
+          return;
+        }
+        teamResultsBody.innerHTML = arr.map(r =>
+          `<tr><td>${r.term || ''}</td><td>${r.co_count || ''}</td><td>${typeof r.jaccard === 'number' ? r.jaccard.toFixed(3) : ''}</td></tr>`
+        ).join('');
+      } catch (e) {
+        teamResultsBody.innerHTML = '<tr><td colspan="3">Error: ' + (e.message || e) + '</td></tr>';
+      }
+    });
+  </script>
 
   <script>
     // --- Topbar terms search bar auto-complete ---
