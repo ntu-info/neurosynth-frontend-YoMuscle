@@ -22,6 +22,12 @@ https://mil.psy.ntu.edu.tw:5000/terms/amygdala
 
 https://mil.psy.ntu.edu.tw:5000/query/amygdala%20not%20emotion/studies
 
+
+### 功能特色
+1. 所有的 input 欄位, 皆採用 AJAX 自動補全技術, 確保使用者不會打錯字.
+2. Term Query: 會依查詢結果, 使用者可以自行針對 related term, 依其條件,再查詢相關 Paper.
+3. Query builder: 提供使用者 query builder 產生查詢的字串, 查詢相關 Paper.
+
 ### 心得 
 1. 前端程式要用 vibe coding 的方式對話, 不是很容易.
 2. 當瞭解每個 API call 回傳的內容及其含意的時候, 就比較容易有想法, 知道如何設計畫面, 讓使用者有較佳的操作及用戶體驗.
